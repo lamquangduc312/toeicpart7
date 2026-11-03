@@ -46,6 +46,11 @@ export function parseTopic(data: TopicData): ParsedTopic {
     if (!cur) { if (!isStr(it)) finalTable = it; continue; }
     cur.push(it);
   }
+  if (!finalTable && raws.length) {
+    const last = raws[raws.length - 1];
+    const tail = last[last.length - 1];
+    if (tail && !isStr(tail)) { finalTable = tail; last.pop(); }
+  }
   const lessons = raws.map((items, idx) => buildLesson(items, idx, data.labels[idx]));
   return { intro, lessons, finalTitle, finalTable };
 }
@@ -82,31 +87,49 @@ function buildLesson(items: Item[], idx: number, short?: string): Lesson {
     if (S) S.items.push(it); else if (P) P.items.push(it);
   }
 
-  const answers = parseAnswers(parts.find((p) => p.n === 3));
-  const questions = parseQuestions(parts, answers);
+  if (!parts.length) {
+    // Định dạng khác: các mục "1. ĐỀ BÀI GỐC", "2. CHIẾN LƯỢC ..." thay cho "PHẦN N:"
+    let Q: Part | null = null;
+    for (const it of items.slice(2)) {
+      const hm = isStr(it) ? it.match(/^(\d{1,2})\.\s+([A-ZĐÀ-Ỹ].*)$/) : null;
+      if (hm && isStr(it) && hm[2].slice(0, 6) === hm[2].slice(0, 6).toUpperCase()) {
+        Q = { n: +hm[1], title: hm[2], subs: [], items: [] }; parts.push(Q); continue;
+      }
+      if (!Q) { Q = { n: 0, title: "Giới thiệu", subs: [], items: [] }; parts.push(Q); }
+      Q.items.push(it);
+    }
+  }
+  const flat = items.slice(2);
+  const questions = parseQuestions(flat);
+  const answers = parseAnswers(flat, questions);
   return { n: idx + 1, label, vi, en, src, qr, parts, answers, questions };
 }
 
-function parseAnswers(p3?: Part): Answer[] {
+function parseAnswers(items: Item[], qs: Question[]): Answer[] {
   const out: Answer[] = [];
-  if (!p3) return out;
-  const all = [...p3.items, ...p3.subs.flatMap((s) => s.items)];
   let a: Answer | null = null;
   let sec = "";
-  const newA = (no: string) => {
-    a = { no, k: "", t: "", stem: "", trace: "", expl: "", para: [], wrong: [] };
+  let prev = "";
+  const newA = (no: string, stem: string) => {
+    a = { no, k: "", t: "", stem, trace: "", expl: "", para: [], wrong: [] };
     out.push(a); sec = "";
+    return a;
   };
-  for (const s of all) {
-    if (!isStr(s)) continue;
+  for (const s of items) {
+    if (!isStr(s)) { a = null; continue; }
+    const p = prev; prev = s;
+    if (/^PHẦN\s*\d|^\d\.\d\.\s|^\d\.\s+[A-ZĐ]{2}/.test(s)) { a = null; continue; }
     let m = s.match(/^(\d{3})\.\s*\(([A-D])\)\s*(.*)$/);
-    if (m) { newA(m[1]); a!.k = m[2]; a!.t = m[3]; continue; }
-    m = s.match(/^(\d{3})\.\s+(.*)$/);
-    if (m) { newA(m[1]); a!.stem = m[2]; continue; }
+    if (m) { const A = newA(m[1], qs.find((q) => q.no === m![1])?.stem ?? ""); A.k = m[2]; A.t = m[3]; continue; }
+    m = s.match(/^(?:Dap an dung|Đáp án đúng)\s*:\s*\(([A-D])\)\s*(.*)$/i);
+    if (m) {
+      const nm = p.match(/^(\d{3})\.?\s+(.*)$/);
+      const no = nm ? nm[1] : qs[out.length]?.no ?? String(out.length + 1);
+      const A = newA(no, nm ? nm[2] : p);
+      A.k = m[1]; A.t = m[2]; continue;
+    }
     const A = a as Answer | null;
     if (!A) continue;
-    m = s.match(/^(?:Dap an dung|Đáp án đúng):\s*\(([A-D])\)\s*(.*)$/i);
-    if (m) { A.k = m[1]; A.t = m[2]; continue; }
     m = s.match(/^\[([^\]]+)\]:?\s*(.*)$/);
     if (m) {
       const lab = m[1], rest = m[2];
@@ -122,32 +145,31 @@ function parseAnswers(p3?: Part): Answer[] {
       const w = A.wrong[A.wrong.length - 1];
       m = s.match(/^-\s*(Ly do sai|Lý do sai|Bay ETS|Bẫy ETS)\s*:\s*(.*)$/i);
       if (w && m) { if (/^L/i.test(m[1])) w.why = m[2]; else w.trap = m[2]; continue; }
-      if (w) { w.why += (w.why ? " " : "") + s; continue; }
+      // dòng tiếp theo là câu hỏi mới (không đánh số) → dừng
+      continue;
     }
     if (sec === "para" && /^•/.test(s)) { A.para.push(s.replace(/^•\s*/, "")); continue; }
     if (sec === "trace") { A.trace += " " + s; continue; }
-    A.expl += (A.expl ? " " : "") + s;
+    if (sec === "expl") A.expl += " " + s;
   }
-  return out;
+  return out.filter((x) => x.k);
 }
 
-/** Câu hỏi tiếng Anh gốc trong mục 1.1 (sau dòng "[ORIGINAL ETS QUESTIONS ...]"). */
-function parseQuestions(parts: Part[], answers: Answer[]): Question[] {
-  const s11 = parts.find((p) => p.n === 1)?.subs[0];
+/** Câu hỏi tiếng Anh gốc (sau dòng "[ORIGINAL ETS QUESTIONS ...]"). */
+function parseQuestions(items: Item[]): Question[] {
   const qs: Question[] = [];
-  if (!s11) return qs;
-  const start = s11.items.findIndex((x) => isStr(x) && /QUESTIONS/i.test(x) && /^\[/.test(x));
+  const start = items.findIndex((x) => isStr(x) && /QUESTIONS/i.test(x) && /^\[/.test(x));
   if (start < 0) return qs;
   let q: Question | null = null;
-  for (const x of s11.items.slice(start + 1)) {
-    if (!isStr(x)) continue;
+  for (const x of items.slice(start + 1)) {
+    if (!isStr(x)) break;
+    if (/^\d\.\d\.\s|^PHẦN|^\d\.\s+[A-ZĐ]{2}/.test(x)) break;
     const m = x.match(/^(?:Question\s*)?(\d{3})\.?(?:\s+(.*))?$/);
     if (m) { q = { no: m[1], stem: m[2] ?? "", options: [] }; qs.push(q); continue; }
     const o = x.match(/^\(([A-D])\)\s*(.*)$/);
     if (o && q) { q.options.push({ k: o[1], t: o[2] }); continue; }
     if (q && !q.options.length) q.stem += (q.stem ? " " : "") + x;
   }
-  for (const q2 of qs) if (!q2.stem) q2.stem = answers.find((a) => a.no === q2.no)?.stem ?? `Câu ${q2.no}`;
   return qs.filter((x) => x.options.length >= 2);
 }
 
