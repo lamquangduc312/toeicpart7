@@ -102,6 +102,7 @@ function buildLesson(items: Item[], idx: number, short?: string): Lesson {
   const flat = items.slice(2);
   const questions = parseQuestions(flat);
   const answers = parseAnswers(flat, questions);
+  for (const q of questions) if (!q.stem) q.stem = answers.find((a) => a.no === q.no)?.stem ?? `Câu ${q.no}`;
   return { n: idx + 1, label, vi, en, src, qr, parts, answers, questions };
 }
 
