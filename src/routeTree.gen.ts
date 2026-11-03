@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChuyenDeIndexRouteImport } from './routes/chuyen-de.index'
+import { Route as ChuyenDeSlugRouteImport } from './routes/chuyen-de.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,30 +23,39 @@ const ChuyenDeIndexRoute = ChuyenDeIndexRouteImport.update({
   path: '/chuyen-de/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChuyenDeSlugRoute = ChuyenDeSlugRouteImport.update({
+  id: '/chuyen-de/$slug',
+  path: '/chuyen-de/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/chuyen-de/$slug': typeof ChuyenDeSlugRoute
   '/chuyen-de/': typeof ChuyenDeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/chuyen-de/$slug': typeof ChuyenDeSlugRoute
   '/chuyen-de': typeof ChuyenDeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/chuyen-de/$slug': typeof ChuyenDeSlugRoute
   '/chuyen-de/': typeof ChuyenDeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chuyen-de/'
+  fullPaths: '/' | '/chuyen-de/$slug' | '/chuyen-de/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chuyen-de'
-  id: '__root__' | '/' | '/chuyen-de/'
+  to: '/' | '/chuyen-de/$slug' | '/chuyen-de'
+  id: '__root__' | '/' | '/chuyen-de/$slug' | '/chuyen-de/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChuyenDeSlugRoute: typeof ChuyenDeSlugRoute
   ChuyenDeIndexRoute: typeof ChuyenDeIndexRoute
 }
 
@@ -65,11 +75,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChuyenDeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chuyen-de/$slug': {
+      id: '/chuyen-de/$slug'
+      path: '/chuyen-de/$slug'
+      fullPath: '/chuyen-de/$slug'
+      preLoaderRoute: typeof ChuyenDeSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChuyenDeSlugRoute: ChuyenDeSlugRoute,
   ChuyenDeIndexRoute: ChuyenDeIndexRoute,
 }
 export const routeTree = rootRouteImport
