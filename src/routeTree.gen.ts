@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ChuyenDeIndexRouteImport } from './routes/chuyen-de.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChuyenDeIndexRoute = ChuyenDeIndexRouteImport.update({
+  id: '/chuyen-de/',
+  path: '/chuyen-de/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/chuyen-de/': typeof ChuyenDeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/chuyen-de': typeof ChuyenDeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/chuyen-de/': typeof ChuyenDeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/chuyen-de/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/chuyen-de'
+  id: '__root__' | '/' | '/chuyen-de/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChuyenDeIndexRoute: typeof ChuyenDeIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chuyen-de/': {
+      id: '/chuyen-de/'
+      path: '/chuyen-de'
+      fullPath: '/chuyen-de/'
+      preLoaderRoute: typeof ChuyenDeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChuyenDeIndexRoute: ChuyenDeIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
