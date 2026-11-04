@@ -48,30 +48,36 @@ function TopicPage() {
   const meta = getTopicMeta(slug);
   const topic = useMemo(() => parseTopic(data), [data]);
   const [activeTab, setActiveTab] = useState<"landing" | "react">("landing");
+  const [isFullWidth, setIsFullWidth] = useState(true);
   const [i, setI] = useState(0);
   const L = topic.lessons[i];
   const landingUrl = meta?.landingUrl || `/landing/${slug}.html`;
 
   return (
     <Page>
-      <section className="mx-auto max-w-7xl px-3 py-6 md:px-6 md:py-8">
-        {/* Header điều hướng & Công cụ */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
+      <section
+        className={`w-full transition-all duration-200 ${
+          isFullWidth ? "px-2 sm:px-4 lg:px-6 py-4" : "mx-auto max-w-7xl px-4 py-6"
+        }`}
+      >
+        {/* Header điều hướng & Công cụ Autofit */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-3">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              <Link to="/chuyen-de" className="hover:text-primary">
+              <Link to="/chuyen-de" className="hover:text-primary transition-colors">
                 Chuyên đề
               </Link>
               <span>/</span>
               <span className="text-foreground">{meta?.name}</span>
             </div>
-            <h1 className="mt-1 font-display text-2xl font-extrabold md:text-3xl text-foreground">
+            <h1 className="mt-1 font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
               {meta?.title ?? data.title}
             </h1>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">{meta?.enSub}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {/* Chuyển đổi giao diện */}
             <div className="flex rounded-lg border border-border bg-secondary/50 p-1 text-xs">
               <button
                 type="button"
@@ -82,7 +88,7 @@ function TopicPage() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Giao diện Landing Page tương tác
+                Giao diện Landing Page
               </button>
               <button
                 type="button"
@@ -97,15 +103,36 @@ function TopicPage() {
               </button>
             </div>
 
+            {/* Nút bật/tắt Autofit Tràn viền trên máy tính */}
+            <button
+              type="button"
+              onClick={() => setIsFullWidth(!isFullWidth)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition hover:bg-secondary/80"
+              title="Bật/tắt chế độ tự động vừa màn hình (Autofit) loại bỏ khoảng trắng 2 bên"
+            >
+              <span>{isFullWidth ? "📐 Khung chuẩn" : "🖥️ Tràn viền Autofit"}</span>
+            </button>
+
+            {/* Mở tab mới */}
             <a
               href={landingUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-lg border border-primary bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
-              title="Mở toàn màn hình trong tab mới"
+              title="Mở toàn màn hình trong tab mới độc lập"
             >
               <span>Toàn màn hình</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M15 3h6v6" />
                 <path d="M10 14 21 3" />
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -114,18 +141,18 @@ function TopicPage() {
           </div>
         </div>
 
-        {/* Nội dung chính */}
+        {/* Nội dung chính: Iframe Autofit */}
         {activeTab === "landing" ? (
-          <div className="mt-4">
+          <div className="mt-3 w-full overflow-hidden rounded-xl border border-border/80 bg-background shadow-sm">
             <iframe
               src={landingUrl}
               title={meta?.title ?? "Landing Page"}
-              className="h-[85vh] min-h-[820px] w-full rounded-xl border border-border bg-card shadow-sm"
+              className="h-[88vh] min-h-[850px] w-full border-0 bg-background block"
               allow="fullscreen"
             />
           </div>
         ) : (
-          <div className="mt-6">
+          <div className="mt-6 max-w-6xl mx-auto">
             <div className="flex flex-wrap gap-2">
               {topic.lessons.map((l, k) => (
                 <button
