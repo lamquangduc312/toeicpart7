@@ -37,9 +37,17 @@ export interface TopicMeta {
   /** Mô tả một dòng cho thẻ chuyên đề. */
   desc: string;
   stats: TopicStats;
+  /** Đường dẫn tới trang landing page HTML độc lập. */
+  landingUrl?: string;
 }
 
 const loaders: Record<string, () => Promise<{ default: TopicData }>> = {
+  banle_tmdt_rma: () => import("./banle_tmdt_rma"),
+  baotri_cosovatchat: () => import("./baotri_cosovatchat"),
+  batdongsan_thuematbang: () => import("./batdongsan_thuematbang"),
+  chuyendoixanh_esg: () => import("./chuyendoixanh_esg"),
+  congtac_sukien: () => import("./congtac_sukien"),
+  daotaonoibo: () => import("./daotaonoibo"),
   dichvukhachhang: () => import("./dichvukhachhang"),
   hopdongthuongmai_sla: () => import("./hopdongthuongmai_sla"),
   hopdong_phaply_sla_baohanh: () => import("./hopdong_phaply_sla_baohanh"),
@@ -54,12 +62,67 @@ const loaders: Record<string, () => Promise<{ default: TopicData }>> = {
 
 export const TOPICS: TopicMeta[] = [
   {
+    slug: "banle_tmdt_rma",
+    name: "Bán lẻ & TMĐT (RMA)",
+    title: "Bán lẻ đa kênh, thương mại điện tử, đổi trả hàng hóa (RMA) & chính sách hoàn tiền",
+    enSub: "Omnichannel Retail, E-Commerce, RMA & Refund Policies",
+    desc: "Mua online nhận tại shop (BOPIS), đổi trả đa kênh BORIS, cấp mã RMA, xử lý hàng vỡ và logistics ngược.",
+    stats: { lessons: 9, questions: 45, pairs: 50, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/banle_tmdt_rma.html",
+  },
+  {
+    slug: "baotri_cosovatchat",
+    name: "Bảo trì & Cơ sở vật chất",
+    title: "Bảo trì thiết bị kỹ thuật, quản lý cơ sở vật chất & an toàn lao động",
+    enSub: "Facility Management, Equipment Maintenance & Workplace Safety",
+    desc: "Bảo trì hệ thống HVAC, sự cố thang máy theo SLA, diễn tập PCCC, quản lý tòa nhà và an toàn lao động PPE.",
+    stats: { lessons: 9, questions: 45, pairs: 50, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/baotri_cosovatchat.html",
+  },
+  {
+    slug: "batdongsan_thuematbang",
+    name: "Bất động sản & Thuê mặt bằng",
+    title: "Bất động sản thương mại, thuê mặt bằng & quản lý tòa nhà",
+    enSub: "Commercial Real Estate, Lease Negotiation & Property Management",
+    desc: "Hợp đồng thuê mặt bằng bán lẻ TI, phí quản lý CAM, cải tạo giấy phép, gia hạn và thẩm định bất động sản.",
+    stats: { lessons: 9, questions: 45, pairs: 50, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/batdongsan_thuematbang.html",
+  },
+  {
+    slug: "chuyendoixanh_esg",
+    name: "Chuyển đổi xanh & ESG",
+    title: "Chuyển đổi xanh, môi trường & báo cáo phát triển bền vững ESG",
+    enSub: "Green Transformation, Environmental Compliance & ESG Sustainability",
+    desc: "Kiểm toán carbon, điện tái tạo PPA, chứng chỉ công trình xanh LEED, kinh tế tuần hoàn và báo cáo Net-Zero.",
+    stats: { lessons: 9, questions: 45, pairs: 50, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/chuyendoixanh_esg.html",
+  },
+  {
+    slug: "congtac_sukien",
+    name: "Công tác & Sự kiện",
+    title: "Công tác doanh nghiệp, tổ chức sự kiện & hội nghị quốc tế",
+    enSub: "Corporate Travel, Event Planning & International Conferences",
+    desc: "Đặt phòng đoàn, công tác phí hoàn ứng, sự cố thời tiết đổi vé máy bay, thuê địa điểm hội nghị và Gala doanh nghiệp.",
+    stats: { lessons: 9, questions: 45, pairs: 50, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/congtac_sukien.html",
+  },
+  {
+    slug: "daotaonoibo",
+    name: "Đào tạo nội bộ & Văn hóa",
+    title: "Đào tạo kỹ năng nội bộ & phát triển văn hóa doanh nghiệp",
+    enSub: "Internal Training, Corporate Culture & Workforce Upskilling",
+    desc: "Quy trình onboarding nhân viên mới, đào tạo an ninh mạng bắt buộc, chuyển đổi hệ thống LMS và khảo sát gắn kết eNPS.",
+    stats: { lessons: 9, questions: 45, pairs: 50, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/daotaonoibo.html",
+  },
+  {
     slug: "dichvukhachhang",
     name: "Dịch vụ khách hàng",
     title: "Dịch vụ khách hàng, xử lý sự cố kỹ thuật & khiếu nại cước phí",
     enSub: "Customer Service, Technical Incident Handling & Billing Disputes",
     desc: "Ticket sự cố kỹ thuật, hoàn cước bị trừ đúp, khiếu nại nhà cung cấp — tình huống chăm sóc khách hàng gặp hằng ngày.",
-    stats: { lessons: 9, pairs: 45, pairsLabel: "thuật ngữ vàng" },
+    stats: { lessons: 9, questions: 45, pairs: 45, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/dichvukhachhang.html",
   },
   {
     slug: "hopdongthuongmai_sla",
@@ -67,7 +130,8 @@ export const TOPICS: TopicMeta[] = [
     title: "Hợp đồng thương mại, điều khoản SLA & pháp lý doanh nghiệp",
     enSub: "Commercial Contracts, SLA Clauses & Corporate Legal Affairs",
     desc: "Điều khoản SLA, phạt chậm tiến độ, đặt cọc, bảo hành và tranh chấp hợp đồng thương mại.",
-    stats: { lessons: 10, pairs: 60, pairsLabel: "thuật ngữ vàng" },
+    stats: { lessons: 10, questions: 50, pairs: 60, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/hopdongthuongmai_sla.html",
   },
   {
     slug: "hopdong_phaply_sla_baohanh",
@@ -76,6 +140,7 @@ export const TOPICS: TopicMeta[] = [
     enSub: "Contracts, SLA Negotiation, Legal Compliance, Warranty & Dispute Resolution",
     desc: "Đàm phán SLA, tuân thủ pháp lý, bảo hành sản xuất và giải quyết tranh chấp giữa các bên.",
     stats: { lessons: 10, questions: 50, vocab: 70, pairs: 60, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/hopdong_phaply_sla_baohanh.html",
   },
   {
     slug: "it_telecom",
@@ -84,6 +149,7 @@ export const TOPICS: TopicMeta[] = [
     enSub: "IT Infrastructure, Telecom, Cloud SaaS, SLA & RPA Automation",
     desc: "ERP lên đám mây, hotfix & UAT, đứt cáp quang, RPA & chatbot AI, an ninh MFA, data center & DR.",
     stats: { lessons: 9, questions: 45, vocab: 72, pairs: 50, pairsLabel: "cặp Paraphrase" },
+    landingUrl: "/landing/it_telecom.html",
   },
   {
     slug: "logistics",
@@ -92,6 +158,7 @@ export const TOPICS: TopicMeta[] = [
     enSub: "Logistics, Supply Chain Management, Freight Forwarding & Warehousing",
     desc: "Vận tải biển 3PL, hàng không khẩn cấp, kho tự động WMS/AGV, giao trễ & phạt SLA, khủng hoảng container.",
     stats: { lessons: 9, questions: 45, vocab: 56, pairs: 50, pairsLabel: "cặp Paraphrase" },
+    landingUrl: "/landing/logistics.html",
   },
   {
     slug: "marketingso_pr",
@@ -99,7 +166,8 @@ export const TOPICS: TopicMeta[] = [
     title: "Marketing số, PR, quảng bá thương hiệu & ra mắt sản phẩm",
     enSub: "Digital Marketing, PR, Brand Promotion & Product Launch",
     desc: "Thông cáo báo chí, chiến dịch đa kênh, ROAS, ra mắt sản phẩm và xử lý khủng hoảng truyền thông.",
-    stats: { lessons: 10, pairs: 50, pairsLabel: "thuật ngữ vàng" },
+    stats: { lessons: 10, questions: 50, pairs: 50, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/marketingso_pr.html",
   },
   {
     slug: "muasam_b2b",
@@ -108,6 +176,7 @@ export const TOPICS: TopicMeta[] = [
     enSub: "B2B Procurement, Tendering, Invoicing, Reconciliation & Bank Payments",
     desc: "Đấu thầu, yêu cầu báo giá RFQ, hóa đơn EDI, đối soát công nợ và thanh toán ngân hàng quốc tế.",
     stats: { lessons: 10, questions: 50, vocab: 80, pairs: 50, pairsLabel: "cặp Paraphrase" },
+    landingUrl: "/landing/muasam_b2b.html",
   },
   {
     slug: "quantrinhansu_kpi",
@@ -115,7 +184,8 @@ export const TOPICS: TopicMeta[] = [
     title: "Quản trị nhân sự toàn diện, tuyển dụng, đãi ngộ phúc lợi & đánh giá hiệu suất KPI",
     enSub: "HR Management, Recruiting, Compensation & KPI Performance Review",
     desc: "Kế nhiệm lãnh đạo, đánh giá KPI, đãi ngộ phúc lợi và tuyển dụng nhân sự cấp cao.",
-    stats: { lessons: 9, pairs: 54, pairsLabel: "thuật ngữ vàng" },
+    stats: { lessons: 9, questions: 45, pairs: 54, pairsLabel: "thuật ngữ vàng" },
+    landingUrl: "/landing/quantrinhansu_kpi.html",
   },
   {
     slug: "taichinh_nganhang",
@@ -124,6 +194,7 @@ export const TOPICS: TopicMeta[] = [
     enSub: "Corporate Finance, Investment Analysis, Banking Instruments & Annual Reports",
     desc: "Báo cáo thường niên, phân tích đầu tư, tín dụng chứng từ và các công cụ ngân hàng doanh nghiệp.",
     stats: { lessons: 10, questions: 50, vocab: 80, pairs: 50, pairsLabel: "cặp Paraphrase" },
+    landingUrl: "/landing/taichinh_nganhang.html",
   },
   {
     slug: "tuyendung_thietke",
@@ -132,6 +203,7 @@ export const TOPICS: TopicMeta[] = [
     enSub: "Recruiting, Industrial Design & R&D Management",
     desc: "Tin tuyển dụng, phỏng vấn, đề án R&D và thiết kế công nghiệp sản phẩm mới.",
     stats: { lessons: 9, questions: 45, vocab: 58, pairs: 50, pairsLabel: "cặp Paraphrase" },
+    landingUrl: "/landing/tuyendung_thietke.html",
   },
 ];
 

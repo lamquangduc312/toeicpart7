@@ -7,9 +7,17 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "TOEIC ETS Part 7 theo chuyên đề — Thực học tình huống doanh nghiệp" },
-      { name: "description", content: "Phương pháp thực học TOEIC Part 7 theo chuyên đề: đề ETS gốc, dịch song ngữ, dấu vết đáp án, bẫy ETS và từ vựng doanh nghiệp." },
+      {
+        name: "description",
+        content:
+          "Phương pháp thực học TOEIC Part 7 theo 16 chuyên đề: đề ETS gốc, dịch song ngữ, dấu vết đáp án, bẫy ETS và từ vựng doanh nghiệp.",
+      },
       { property: "og:title", content: "TOEIC ETS Part 7 theo chuyên đề" },
-      { property: "og:description", content: "Học đọc hiểu Part 7 qua các tình huống doanh nghiệp thật — hợp đồng, logistics, tài chính, nhân sự." },
+      {
+        property: "og:description",
+        content:
+          "Học đọc hiểu Part 7 qua các tình huống doanh nghiệp thật — bán lẻ TMĐT, bảo trì cơ sở vật chất, ESG, hợp đồng, logistics, tài chính, nhân sự.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -46,15 +54,22 @@ function Index() {
           gọi tên từng bẫy — và mang theo cách xử lý tình huống ra cả phòng họp.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link to="/chuyen-de" className="rounded-md bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary/90">
-            Bắt đầu học
-          </Link>
-          <a href="#cach-hoc" className="rounded-md border border-border px-5 py-3 font-semibold hover:bg-secondary">
+          <a
+            href="#chuyen-de-section"
+            className="rounded-md bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary/90 transition shadow-sm"
+          >
+            Bắt đầu học ngay
+          </a>
+          <a href="#cach-hoc" className="rounded-md border border-border px-5 py-3 font-semibold hover:bg-secondary transition">
             Cách học hoạt động
           </a>
         </div>
         <dl className="mt-12 grid max-w-xl grid-cols-3 gap-6 border-t border-border pt-6">
-          {[[TOPICS.length, "chuyên đề"], [totalLessons, "bài thực hành"], [totalLessons * 5, "câu hỏi ETS"]].map(([n, l]) => (
+          {[
+            [TOPICS.length, "chuyên đề"],
+            [totalLessons, "bài thực hành"],
+            [totalLessons * 5, "câu hỏi ETS"],
+          ].map(([n, l]) => (
             <div key={String(l)}>
               <dt className="font-display text-3xl font-extrabold">{n}</dt>
               <dd className="text-sm text-muted-foreground">{l}</dd>
@@ -87,13 +102,22 @@ function Index() {
         ))}
       </section>
 
-      <section className="mx-auto max-w-6xl px-4">
-        <div className="flex items-end justify-between gap-4">
-          <h2 className="font-display text-3xl font-extrabold md:text-4xl">Các chuyên đề</h2>
-          <Link to="/chuyen-de" className="text-sm font-semibold text-primary underline-offset-4 hover:underline">Xem tất cả</Link>
+      <section id="chuyen-de-section" className="mx-auto max-w-6xl px-4 py-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="font-display text-3xl font-extrabold md:text-4xl">16 Chuyên đề TOEIC Part 7</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Bao quát toàn bộ các tình huống nghiệp vụ: TMĐT, bảo trì, ESG, hợp đồng, IT, logistics, tài chính, nhân sự.
+            </p>
+          </div>
+          <Link to="/chuyen-de" className="text-sm font-semibold text-primary underline-offset-4 hover:underline">
+            Xem danh sách đầy đủ ({TOPICS.length})
+          </Link>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {TOPICS.slice(0, 6).map((t, i) => <TopicCard key={t.slug} topic={t} index={i} />)}
+          {TOPICS.map((t, i) => (
+            <TopicCard key={t.slug} topic={t} index={i} />
+          ))}
         </div>
       </section>
     </Page>

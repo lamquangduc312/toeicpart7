@@ -1,5 +1,4 @@
 // AUTO-GENERATED from the uploaded chuyên đề landing page. Do not edit by hand.
-// Regenerate with the extraction script; see src/data/topics/README.md.
 import type { TopicData } from "./index";
 
 export default JSON.parse(
