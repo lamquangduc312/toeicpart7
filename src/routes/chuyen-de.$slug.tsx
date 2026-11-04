@@ -1,6 +1,6 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Page } from "@/components/site-chrome";
+import { Page, SiteHeader } from "@/components/site-chrome";
 import { getTopicMeta, hasTopic, loadTopic } from "@/data/topics";
 import { parseTopic, type Lesson } from "@/lib/topic-parser";
 
@@ -48,19 +48,99 @@ function TopicPage() {
   const meta = getTopicMeta(slug);
   const topic = useMemo(() => parseTopic(data), [data]);
   const [activeTab, setActiveTab] = useState<"landing" | "react">("landing");
-  const [isFullWidth, setIsFullWidth] = useState(true);
   const [i, setI] = useState(0);
   const L = topic.lessons[i];
   const landingUrl = meta?.landingUrl || `/landing/${slug}.html`;
 
+  if (activeTab === "landing") {
+    return (
+      <div className="flex h-screen h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
+        {/* Header điều hướng chính */}
+        <SiteHeader />
+
+        {/* Thanh điều khiển chuyên đề tinh gọn (Sleek Compact Bar) */}
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border bg-card/80 px-3 py-1.5 backdrop-blur sm:px-6 z-10">
+          <div className="flex min-w-0 items-center gap-2 text-xs">
+            <Link
+              to="/chuyen-de"
+              className="font-semibold text-muted-foreground transition-colors hover:text-primary whitespace-nowrap"
+            >
+              ← Chuyên đề
+            </Link>
+            <span className="text-border">/</span>
+            <span className="truncate font-bold text-foreground text-sm">
+              {meta?.name ?? topic.title}
+            </span>
+            {meta?.enSub && (
+              <span className="hidden md:inline text-[11px] uppercase tracking-wider text-muted-foreground truncate">
+                · {meta.enSub}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Chuyển đổi giao diện */}
+            <div className="flex rounded-md border border-border bg-secondary/60 p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setActiveTab("landing")}
+                className="rounded px-2.5 py-1 font-semibold bg-primary text-primary-foreground shadow-sm transition"
+              >
+                Landing Page tương tác
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("react")}
+                className="rounded px-2.5 py-1 font-medium text-muted-foreground transition hover:text-foreground"
+              >
+                Tóm tắt React
+              </button>
+            </div>
+
+            {/* Mở toàn màn hình */}
+            <a
+              href={landingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
+              title="Mở toàn màn hình trong tab mới độc lập"
+            >
+              <span>Toàn màn hình</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M15 3h6v6" />
+                <path d="M10 14 21 3" />
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        {/* Iframe tràn viền Autofit chiều dọc & chiều ngang: 0 thanh cuộn kép, 0 khoảng trắng thừa */}
+        <main className="flex-1 w-full min-h-0 overflow-hidden bg-background">
+          <iframe
+            src={landingUrl}
+            title={meta?.title ?? "Landing Page"}
+            className="h-full w-full border-0 block bg-background"
+            allow="fullscreen"
+          />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <Page>
-      <section
-        className={`w-full transition-all duration-200 ${
-          isFullWidth ? "px-2 sm:px-4 lg:px-6 py-4" : "mx-auto max-w-7xl px-4 py-6"
-        }`}
-      >
-        {/* Header điều hướng & Công cụ Autofit */}
+      <section className="mx-auto max-w-7xl px-4 py-6">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-3">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -77,43 +157,23 @@ function TopicPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {/* Chuyển đổi giao diện */}
             <div className="flex rounded-lg border border-border bg-secondary/50 p-1 text-xs">
               <button
                 type="button"
                 onClick={() => setActiveTab("landing")}
-                className={`rounded-md px-3 py-1.5 font-medium transition ${
-                  activeTab === "landing"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className="rounded-md px-3 py-1.5 font-medium text-muted-foreground hover:text-foreground transition"
               >
                 Giao diện Landing Page
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("react")}
-                className={`rounded-md px-3 py-1.5 font-medium transition ${
-                  activeTab === "react"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className="rounded-md px-3 py-1.5 font-medium bg-primary text-primary-foreground shadow-sm transition"
               >
                 Chế độ Tóm tắt React
               </button>
             </div>
 
-            {/* Nút bật/tắt Autofit Tràn viền trên máy tính */}
-            <button
-              type="button"
-              onClick={() => setIsFullWidth(!isFullWidth)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground transition hover:bg-secondary/80"
-              title="Bật/tắt chế độ tự động vừa màn hình (Autofit) loại bỏ khoảng trắng 2 bên"
-            >
-              <span>{isFullWidth ? "📐 Khung chuẩn" : "🖥️ Tràn viền Autofit"}</span>
-            </button>
-
-            {/* Mở tab mới */}
             <a
               href={landingUrl}
               target="_blank"
@@ -141,36 +201,24 @@ function TopicPage() {
           </div>
         </div>
 
-        {/* Nội dung chính: Iframe Autofit */}
-        {activeTab === "landing" ? (
-          <div className="mt-3 w-full overflow-hidden rounded-xl border border-border/80 bg-background shadow-sm">
-            <iframe
-              src={landingUrl}
-              title={meta?.title ?? "Landing Page"}
-              className="h-[88vh] min-h-[850px] w-full border-0 bg-background block"
-              allow="fullscreen"
-            />
+        <div className="mt-6 max-w-6xl mx-auto">
+          <div className="flex flex-wrap gap-2">
+            {topic.lessons.map((l, k) => (
+              <button
+                key={k}
+                onClick={() => setI(k)}
+                className={`rounded-md border px-3 py-2 text-sm ${
+                  k === i
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border hover:bg-secondary"
+                }`}
+              >
+                {String(l.n).padStart(2, "0")} · {l.label}
+              </button>
+            ))}
           </div>
-        ) : (
-          <div className="mt-6 max-w-6xl mx-auto">
-            <div className="flex flex-wrap gap-2">
-              {topic.lessons.map((l, k) => (
-                <button
-                  key={k}
-                  onClick={() => setI(k)}
-                  className={`rounded-md border px-3 py-2 text-sm ${
-                    k === i
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border hover:bg-secondary"
-                  }`}
-                >
-                  {String(l.n).padStart(2, "0")} · {l.label}
-                </button>
-              ))}
-            </div>
-            {L ? <LessonView key={i} lesson={L} /> : null}
-          </div>
-        )}
+          {L ? <LessonView key={i} lesson={L} /> : null}
+        </div>
       </section>
     </Page>
   );

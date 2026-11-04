@@ -339,7 +339,47 @@ footer{border-top:1px solid var(--line);padding-block:20px 32px;color:var(--mute
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 
-/* autofit-patch */
+/* autofit-patch-v2: toi uu toan dien chieu doc va chieu ngang tren moi man hinh */
+html{scroll-behavior:smooth}
+body{overflow-y:auto;scrollbar-gutter:stable}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--line) 75%,var(--muted));border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+/* Toi uu nhip doc chieu doc (Vertical Rhythm) - loai bo khoang trong thua */
+main{padding-block:clamp(10px,1.5vw,18px) clamp(16px,2.5vh,28px)!important}
+.hero{padding-block:clamp(12px,1.8vw,20px)!important;gap:clamp(14px,2.2vw,28px)!important}
+.stats{margin-top:12px!important;gap:6px 20px!important}
+.stat b{font-size:clamp(26px,2.8vw,34px)!important}
+.lesson-head{padding-bottom:12px!important;gap:14px!important}
+.big-n{font-size:clamp(44px,5vw,68px)!important}
+.layout{margin-top:clamp(10px,1.2vh,18px)!important;gap:clamp(14px,1.8vw,24px)!important}
+.toc{top:calc(env(safe-area-inset-top,0px) + 60px)!important;gap:2px!important}
+.toc a{padding:5px 8px!important;font-size:13px!important}
+.content{gap:clamp(16px,2.2vh,24px)!important}
+.part{gap:12px!important;scroll-margin-top:60px!important}
+.part-h{padding-bottom:6px!important}
+.sub{gap:10px!important;scroll-margin-top:60px!important}
+
+/* Hien thi Van ban Song song (Side-by-side) cho Double/Triple Passages tren desktop giup xem doi chieu khong can cuon */
+.papers{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr))!important;gap:14px!important;align-items:start!important}
+.paper{padding:clamp(14px,1.6vw,20px)!important;gap:8px!important}
+.strat{padding:12px 16px!important;gap:8px!important}
+.steps{gap:8px!important}
+.quiz{gap:10px!important}
+.q{padding:12px 14px!important;gap:8px!important}
+.bi-doc{padding:6px 0 2px!important;margin-top:4px!important}
+.pair>div{padding:8px 12px!important}
+.sum{gap:10px!important}
+.sum>div{padding:12px 14px!important}
+.flow{gap:10px!important}
+.fstep{padding:12px 14px!important;gap:8px!important}
+.vocab{gap:10px!important}
+.vc{padding:12px 14px!important;gap:6px!important}
+.pager button{padding:10px 14px!important}
+footer{padding-block:12px 16px!important}
+
 @media (max-width:640px){
   .yard{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
   .box .n{font-size:22px!important}
