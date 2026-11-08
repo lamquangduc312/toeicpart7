@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { Page, SiteHeader } from "@/components/site-chrome";
 import { getTopicMeta, hasTopic, loadTopic } from "@/data/topics";
 import { parseTopic, type Lesson } from "@/lib/topic-parser";
@@ -52,82 +52,224 @@ function TopicPage() {
   const L = topic.lessons[i];
   const landingUrl = meta?.landingUrl || `/landing/${slug}.html`;
 
+  // Tự động cuộn và ẩn 2 dòng đầu khi đọc bài, chỉ giữ lại thanh bài học
+  const headerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(108);
+
+  useEffect(() => {
+    if (headerRef.current) {
+      setHeaderHeight(headerRef.current.offsetHeight);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== "landing") return;
+
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    let lastScrollY = 0;
+    let ticking = false;
+
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          try {
+            const win = iframe.contentWindow;
+            if (!win) return;
+            const currentScrollY = win.scrollY;
+            const deltaY = currentScrollY - lastScrollY;
+
+            // Kéo xuống quá 40px và đang cuộn xuống: Ẩn 2 dòng đầu
+            if (currentScrollY > 40 && deltaY > 5) {
+              setIsHeaderHidden(true);
+            }
+            // Kéo ngược lên hoặc về gần đầu trang: Hiện lại 2 dòng đầu
+            else if (deltaY < -15 || currentScrollY <= 20) {
+              setIsHeaderHidden(false);
+            }
+
+            lastScrollY = currentScrollY;
+          } catch (e) {
+            // bỏ qua nếu có chính sách bảo mật
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    const attach = () => {
+      try {
+        const win = iframe.contentWindow;
+        if (win) {
+          win.removeEventListener("scroll", onScroll);
+          win.addEventListener("scroll", onScroll, { passive: true });
+        }
+      } catch (e) {}
+    };
+
+    attach();
+    iframe.addEventListener("load", attach);
+
+    // Lắng nghe sự kiện postMessage từ landing page HTML
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data?.type === "landing-scroll") {
+        const { scrollY, deltaY } = e.data;
+        if (scrollY > 40 && deltaY > 5) {
+          setIsHeaderHidden(true);
+        } else if (deltaY < -15 || scrollY <= 20) {
+          setIsHeaderHidden(false);
+        }
+      }
+    };
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      try {
+        iframe.contentWindow?.removeEventListener("scroll", onScroll);
+      } catch (e) {}
+      iframe.removeEventListener("load", attach);
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [activeTab, landingUrl]);
+
   if (activeTab === "landing") {
     return (
-      <div className="flex h-screen h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
-        {/* Header điều hướng chính */}
-        <SiteHeader />
-
-        {/* Thanh điều khiển chuyên đề tinh gọn (Sleek Compact Bar) */}
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border bg-card/80 px-3 py-1.5 backdrop-blur sm:px-6 z-10">
-          <div className="flex min-w-0 items-center gap-2 text-xs">
-            <Link
-              to="/chuyen-de"
-              className="font-semibold text-muted-foreground transition-colors hover:text-primary whitespace-nowrap"
+      <div className="relative flex h-screen h-[100dvh] w-full flex-col overflow-hidden bg-background font-sans text-foreground">
+        {/* Nút nổi tinh tế mở lại 2 dòng đầu khi đang bị ẩn */}
+        {isHeaderHidden && (
+          <button
+            type="button"
+            onClick={() => setIsHeaderHidden(false)}
+            className="fixed top-2 right-4 z-50 flex items-center gap-1.5 rounded-full border border-border/80 bg-background/95 px-3 py-1 text-xs font-semibold text-foreground shadow-md backdrop-blur transition hover:bg-secondary hover:scale-105"
+            title="Bấm để hiện lại thanh điều hướng chuyên đề"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              ← Chuyên đề
-            </Link>
-            <span className="text-border">/</span>
-            <span className="truncate font-bold text-foreground text-sm">
-              {meta?.name ?? topic.title}
-            </span>
-            {meta?.enSub && (
-              <span className="hidden md:inline text-[11px] uppercase tracking-wider text-muted-foreground truncate">
-                · {meta.enSub}
-              </span>
-            )}
-          </div>
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+            <span>Hiện menu</span>
+          </button>
+        )}
 
-          <div className="flex items-center gap-2">
-            {/* Chuyển đổi giao diện */}
-            <div className="flex rounded-md border border-border bg-secondary/60 p-0.5 text-xs">
-              <button
-                type="button"
-                onClick={() => setActiveTab("landing")}
-                className="rounded px-2.5 py-1 font-semibold bg-primary text-primary-foreground shadow-sm transition"
+        {/* Khối 2 dòng đầu: SiteHeader + Thanh chuyên đề (Cuộn mượt mà ẩn đi khi kéo bài đọc lên) */}
+        <div
+          ref={headerRef}
+          style={{ marginTop: isHeaderHidden ? `-${headerHeight}px` : "0px" }}
+          className={`shrink-0 z-20 transition-all duration-300 ease-in-out ${
+            isHeaderHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+          }`}
+        >
+          {/* Dòng 1: Header điều hướng chính */}
+          <SiteHeader />
+
+          {/* Dòng 2: Thanh điều khiển chuyên đề tinh gọn */}
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border bg-card/90 px-3 py-1.5 backdrop-blur sm:px-6">
+            <div className="flex min-w-0 items-center gap-2 text-xs">
+              <Link
+                to="/chuyen-de"
+                className="font-semibold text-muted-foreground transition-colors hover:text-primary whitespace-nowrap"
               >
-                Landing Page tương tác
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("react")}
-                className="rounded px-2.5 py-1 font-medium text-muted-foreground transition hover:text-foreground"
-              >
-                Tóm tắt React
-              </button>
+                ← Chuyên đề
+              </Link>
+              <span className="text-border">/</span>
+              <span className="truncate font-bold text-foreground text-sm">
+                {meta?.name ?? topic.title}
+              </span>
+              {meta?.enSub && (
+                <span className="hidden md:inline text-[11px] uppercase tracking-wider text-muted-foreground truncate">
+                  · {meta.enSub}
+                </span>
+              )}
             </div>
 
-            {/* Mở toàn màn hình */}
-            <a
-              href={landingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
-              title="Mở toàn màn hình trong tab mới độc lập"
-            >
-              <span>Toàn màn hình</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            <div className="flex items-center gap-2">
+              {/* Nút thủ công thu gọn 2 dòng đầu */}
+              <button
+                type="button"
+                onClick={() => setIsHeaderHidden(true)}
+                className="hidden sm:inline-flex items-center gap-1 rounded-md border border-border bg-secondary/60 px-2 py-1 text-xs font-medium text-muted-foreground transition hover:text-foreground"
+                title="Ẩn 2 dòng đầu để tối đa hóa không gian đọc bài học"
               >
-                <path d="M15 3h6v6" />
-                <path d="M10 14 21 3" />
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-              </svg>
-            </a>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+                <span>Ẩn thanh trên</span>
+              </button>
+
+              {/* Chuyển đổi giao diện */}
+              <div className="flex rounded-md border border-border bg-secondary/60 p-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("landing")}
+                  className="rounded px-2.5 py-1 font-semibold bg-primary text-primary-foreground shadow-sm transition"
+                >
+                  Landing Page tương tác
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("react")}
+                  className="rounded px-2.5 py-1 font-medium text-muted-foreground transition hover:text-foreground"
+                >
+                  Tóm tắt React
+                </button>
+              </div>
+
+              {/* Mở toàn màn hình */}
+              <a
+                href={landingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
+                title="Mở toàn màn hình trong tab mới độc lập"
+              >
+                <span>Toàn màn hình</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M15 3h6v6" />
+                  <path d="M10 14 21 3" />
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
 
-        {/* Iframe tràn viền Autofit chiều dọc & chiều ngang: 0 thanh cuộn kép, 0 khoảng trắng thừa */}
+        {/* Iframe tràn viền: Khi 2 dòng đầu ẩn, tự động chiếm 100% màn hình, chỉ giữ lại thanh bài học ở top */}
         <main className="flex-1 w-full min-h-0 overflow-hidden bg-background">
           <iframe
+            ref={iframeRef}
             src={landingUrl}
             title={meta?.title ?? "Landing Page"}
             className="h-full w-full border-0 block bg-background"

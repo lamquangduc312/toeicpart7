@@ -911,5 +911,14 @@ let start=(location.hash||'').slice(1);
 if(!panels[start]){ try{ start=localStorage.getItem('lg-tab')||''; }catch(e){ start=''; } }
 show(panels[start]?start:TABS[0].id,null);
 window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(panels[h]) show(h,true); });
+/* Thong bao cuon cho trang cha tu dong an/hien 2 dong dau */
+let _lastSY=0;
+window.addEventListener('scroll',()=>{
+  try{
+    const sy=window.scrollY;
+    window.parent?.postMessage({type:'landing-scroll',scrollY:sy,deltaY:sy-_lastSY},'*');
+    _lastSY=sy;
+  }catch(e){}
+},{passive:true});
 })();
 </script>
